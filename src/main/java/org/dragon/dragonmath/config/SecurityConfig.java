@@ -1,36 +1,53 @@
 package org.dragon.dragonmath.config;
 
 
+import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig  {
+@AllArgsConstructor
+public class SecurityConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "spring.h2.console.enabled", havingValue = "true")
-    public WebSecurityCustomizer configureH2ConsoleEnable() {
-        return web -> web.ignoring()
-                .requestMatchers(PathRequest.toH2Console());
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
     }
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((registry) -> registry.requestMatchers(new AntPathRequestMatcher("/user")).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .build();
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // csrf disable
+        http
+                .csrf(AbstractHttpConfigurer::disable);
+        // form 방식 로그인 disable
+        http
+                .formLogin(AbstractHttpConfigurer::disable);
+        // http 로그인 disable
+        http
+                .httpBasic(AbstractHttpConfigurer::disable);
+        // 경로별 인가 작업
+        http
+                .authorizeHttpRequests((auth) ->
+                        auth
+                                .requestMatchers("/user/login", "/user/join").permitAll()
+                                .requestMatchers("/admin").hasRole("ADMIN")
+                                .anyRequest().authenticated()
+                        );
+
+        http
+                .sessionManagement((session) ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+
     }
 }

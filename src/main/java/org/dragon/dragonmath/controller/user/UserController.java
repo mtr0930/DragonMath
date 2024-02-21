@@ -39,7 +39,7 @@ public class UserController {
         return ResponseEntity.ok().body(new GetUserResponseDto());
     }
 
-    @PostMapping("")
+    @PostMapping("/join")
     @Operation(summary = "신규 유저 정보 생성", description = "신규 유저 정보를 생성합니다.")
     @ApiResponses(
             value = {
