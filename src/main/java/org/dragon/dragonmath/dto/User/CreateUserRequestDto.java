@@ -15,8 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class CreateUserRequestDto {
-    @Schema(description = "ID")
-    private String id;
+    @Schema(description = "유저 ID")
+    private String userId;
 
     @Schema(description = "비밀번호")
     private String password;

@@ -26,20 +26,22 @@ public class UserService {
 
     @Transactional
     public void creatUser(CreateUserRequestDto createUserRequestDto){
-        User newUser = User.builder()
-                        .email(createUserRequestDto.getEmail())
-                        .id(createUserRequestDto.getId())
-                        .name(createUserRequestDto.getName())
-                        .password(bCryptPasswordEncoder.encode(createUserRequestDto.getPassword()))
-                        .phoneNumber(createUserRequestDto.getPhoneNumber())
-                .build();
-        UserAuthority userAuthority = UserAuthority.builder()
-                .user(newUser)
-                .authority(Authority.builder()
-                        .authorityName("GENERAL_USER")
-                        .build())
-                .build();
-        userRepository.save(newUser);
-        userAuthorityRepository.save(userAuthority);
+        if(!userRepository.existsUserByUserId(createUserRequestDto.getUserId())) {
+            User newUser = User.builder()
+                    .email(createUserRequestDto.getEmail())
+                    .userId(createUserRequestDto.getUserId())
+                    .name(createUserRequestDto.getName())
+                    .password(bCryptPasswordEncoder.encode(createUserRequestDto.getPassword()))
+                    .phoneNumber(createUserRequestDto.getPhoneNumber())
+                    .build();
+            UserAuthority userAuthority = UserAuthority.builder()
+                    .user(newUser)
+                    .authority(Authority.builder()
+                            .authorityName("ADMIN")
+                            .build())
+                    .build();
+            userRepository.save(newUser);
+            userAuthorityRepository.save(userAuthority);
+        }
     }
 }
